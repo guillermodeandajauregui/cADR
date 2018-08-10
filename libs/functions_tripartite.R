@@ -238,7 +238,7 @@ tripartite_pair_function = function(g, d1, d2){
 
 
 
-tripartite_full_function = function(g){
+tripartite_full_function = function(g, kores_o = 3, kores_i = 3){
   #takes a tripartite graph with DRUGS, GO, and ADRs
   #returns a big list
   
@@ -248,8 +248,8 @@ tripartite_full_function = function(g){
   names(drug_seq) = names(all_drugs) #so the lists are named already
   
   #iterate over drugs
-  result_list = lapply(X = drug_seq, function(i){
-    lapply(X = drug_seq, function(j){
+  result_list = parallel::mclapply(X = drug_seq, mc.cores = kores_o, function(i){
+    parallel::mclapply(X = drug_seq, mc.cores = kores_i, function(j){
       if(j<=i){return(NA)}else{#this is to avoid doing the calcs twice
         d1 = all_drugs[i]
         d2 = all_drugs[j]

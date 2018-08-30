@@ -262,4 +262,96 @@ tripartite_full_function = function(g, kores_o = 3, kores_i = 3){
   return(result_list)
 }
 
+#result analysis functions
 
+#extract values from result list
+##example, with number of cADR
+
+number.cadr = function(result_list){
+  lapply(X = result_list, FUN = function(i){
+    lapply(X = i, FUN = function(j){
+      if(is.na(j)){return(NA)}else{
+        return(length(j$cADR))
+      }
+    })
+  })  
+}
+
+#take a simplified (Extracted) result list, return a matrix (for plotting)
+
+resultList2Matrix = function(result_list){
+  #list must have value L2 L1 order AND column names
+  
+  #melt to dataframe
+  t3 = melt(result_list)
+  #make intermediate mirror data frame
+  tm = t3[c(1,3,2)]
+  #and change colnames to make them rbindable
+  colnames(tm) = c("value", "L2", "L1")
+  #remove the rows where L1 == L2 in the intermidiate mirror
+  tm = tm[-(which(tm$L1==tm$L2)),]
+  #rbind
+  t5 = rbind(t3, tm)
+  #Remove the rows with NA values
+  t5 = t5[-which(t5$L1 != t5$L2 & is.na(t5$value)),]
+  t6 = dcast(t5, L1~L2)
+  t7 = as.matrix(t6[,-1])
+  rownames(t7) = t6$L1
+  return(t7)
+}
+
+reorder.matrix2df = function(mx){
+  ord = hclust(dist(mx))$order
+  t6 = as.matrix(mx)[ord,ord]
+  t7 = reshape2::melt(data = t6, na.rm = FALSE)
+  return(t7)
+}
+
+#take a list of results and return a data frame
+getNo.cADR.df = function(resultList){
+  r1 = lapply(resultList, FUN = function(z){
+    ldply(z, .id = "drug2", .fun = function(y){
+      if(length(y)!=5){return(NA)} #full results always have 5 
+      else{return(length(y[["cADR"]]
+      )
+      )
+      }
+    })  
+  })
+  
+  r2 = dplyr::bind_rows(r1, .id = 'drug1')
+  return(r2)
+}
+
+#symetrizer function
+
+symmetrizer_function = function(df){
+  #takes a ggplot ready 3 column data frame
+  # Elem1 Elem2 Value 
+  #that has A B X but not B A X
+  #and makes it simmetrical in a very naive way
+  
+  #drop NAs that are NOT the same element
+  # A B NA is dropped, but A A NA is kept
+  idx2drop = which(df[,1]!=df[,2] & is.na(df[,3]))
+  df2      = df[-idx2drop,]
+  
+  #make a second one, where element 1 and element 2 will be swapped
+  df3      = df2[,c(2,1,3)]     
+  ##drop the repeated ones in this one
+  todrop2  = which(df3[,1]==df3[,2])
+  df3      = df3[-todrop2,]
+  
+  #make colnames the same so we can paste
+  colnames(df3) <- colnames(df2)
+  
+  #paste!
+  df4     = rbind(df2, df3)
+  
+  #and make sure elements are characters, not factors
+  
+  df4[,1] = as.character(df4[,1])
+  df4[,2] = as.character(df4[,2])
+  
+  return(df4)
+}

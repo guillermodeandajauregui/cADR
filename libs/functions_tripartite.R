@@ -355,3 +355,42 @@ symmetrizer_function = function(df){
   
   return(df4)
 }
+
+#clustering analysis
+clustering_analysis <- function(df, 
+                                clustering.method = "complete", 
+                                distance.method = "euclidean",
+                                formula = drug1~drug2){
+  #takes a ggplot ready 3 column data frame
+  # Elem1 Elem2 Value
+  #with all possible combination values
+  # A B X and B A X must be in it
+  #and will return a list 
+  ##with an hclust object 
+  ##and a copy of the original data frame, but reordered 
+  
+  #copy the names of the original dataframe
+  originalNames = colnames(df)
+  
+  #cast from data frame
+  mx = reshape2::acast(df, formula = formula)
+  
+  #clustering object 
+  clustering.object = hclust(d = dist(x = mx, 
+                                      method = distance.method),
+                             method = clustering.method
+  )
+  
+  #reorder matrix
+  mx = mx[clustering.object$order, clustering.object$order]
+  
+  #melt matrix
+  df2 = melt(mx)
+  df2 = df2[,c(2,1,3)] #so they have the same order as before
+  colnames(df2) = originalNames
+  
+  rl = list(clustering.object = clustering.object,
+            ordered.df = df2)
+  return(rl)
+  
+}

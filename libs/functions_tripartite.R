@@ -323,6 +323,58 @@ getNo.cADR.df = function(resultList){
   return(r2)
 }
 
+#mode 1
+getNo.mode1.df = function(resultList){
+  r1 = lapply(resultList, FUN = function(z){
+    ldply(z, .id = "drug2", .fun = function(y){
+      if(length(y)!=5){return(NA)} #full results always have 5 
+      else{
+        w = y[["cADR"]]
+        r = sum(sapply(X = w, FUN = function(zz){
+          length(zz$mode_1)
+        }))
+        return(r)
+      }})  
+  })
+  
+  r2 = dplyr::bind_rows(r1, .id = 'drug1')
+  return(r2)
+}
+
+#mode 2
+getNo.mode2.df = function(resultList){
+  r1 = lapply(resultList, FUN = function(z){
+    ldply(z, .id = "drug2", .fun = function(y){
+      if(length(y)!=5){return(NA)} #full results always have 5 
+      else{
+        w = y[["cADR"]]
+        r = sum(sapply(X = w, FUN = function(zz){
+          length(zz$mode_2)
+        }))
+        return(r)
+      }})  
+  })
+  
+  r2 = dplyr::bind_rows(r1, .id = 'drug1')
+  return(r2)
+}
+
+#no CRM
+
+getNo.CRM.df = function(resultList){
+  r1 = lapply(resultList, FUN = function(z){
+    ldply(z, .id = "drug2", .fun = function(y){
+      if(length(y)!=5){return(NA)} #full results always have 5 
+      else{
+        w = y[["cADRnw"]]$components$no
+        return(w)
+      }})  
+  })
+  
+  r2 = dplyr::bind_rows(r1, .id = 'drug1')
+  return(r2)
+}
+
 #symetrizer function
 
 symmetrizer_function = function(df){
@@ -394,3 +446,4 @@ clustering_analysis <- function(df,
   return(rl)
   
 }
+

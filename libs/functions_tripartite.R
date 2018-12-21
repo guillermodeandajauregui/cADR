@@ -1,6 +1,7 @@
 library(igraph)
 library(tidyverse)
 library(data.table)
+library(plyr)
 
 pair_subgraph = function(g, v1, v2){
   #takes a graph and two vertices (drugs)
@@ -29,7 +30,7 @@ pair_composites = function(g){
   return(V(g)[intersect(m1,m2)])
 }
 
-remove_headless_go = function(g, v){
+remove_headless_go = function(g, v = V(g)[type=="GO"]){
   #takes a (sub)graph 
   #and a set of nodes 
   #removes vertices without upstream 
